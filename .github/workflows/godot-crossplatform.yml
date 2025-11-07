@@ -14,32 +14,32 @@ jobs:
         platform: [Windows, Linux, HTML5]
 
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v3
+      - name: Checkout Repository
+        uses: actions/checkout@v3
 
-    - name: Download Godot Headless
-      run: |
-        GODOT_VERSION="4.5"
-        wget https://downloads.tuxfamily.org/godotengine/${GODOT_VERSION}/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
-        unzip Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
-        chmod +x Godot_v${GODOT_VERSION}-stable_linux.x86_64/Godot
-        mv Godot_v${GODOT_VERSION}-stable_linux.x86_64/Godot ./godot
+      - name: Download Godot Headless
+        run: |
+          GODOT_VERSION="4.5"
+          wget https://downloads.tuxfamily.org/godotengine/${GODOT_VERSION}/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
+          unzip Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
+          chmod +x Godot_v${GODOT_VERSION}-stable_linux.x86_64/Godot
+          mv Godot_v${GODOT_VERSION}-stable_linux.x86_64/Godot ./godot
 
-    - name: Create builds folder
-      run: mkdir -p builds
+      - name: Create builds folder
+        run: mkdir -p builds
 
-    - name: Export Build
-      run: |
-        if [ "${{ matrix.platform }}" == "Windows" ]; then
-          ./godot --headless --export "Windows" builds/game.exe
-        elif [ "${{ matrix.platform }}" == "Linux" ]; then
-          ./godot --headless --export "Linux/X11" builds/game.x86_64
-        elif [ "${{ matrix.platform }}" == "HTML5" ]; then
-          ./godot --headless --export "HTML5" builds/game.html
-        fi
+      - name: Export Build
+        run: |
+          if [ "${{ matrix.platform }}" == "Windows" ]; then
+            ./godot --headless --export "Windows" builds/game.exe
+          elif [ "${{ matrix.platform }}" == "Linux" ]; then
+            ./godot --headless --export "Linux/X11" builds/game.x86_64
+          elif [ "${{ matrix.platform }}" == "HTML5" ]; then
+            ./godot --headless --export "HTML5" builds/game.html
+          fi
 
-    - name: Upload Artifacts
-      uses: actions/upload-artifact@v3
-      with:
-        name: ${{ matrix.platform }}-build
-        path: builds/
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.platform }}-build
+          path: builds/
