@@ -1,0 +1,314 @@
+[gd_scene load_steps=22 format=3 uid="uid://cm3sb2cekjja4"]
+
+[ext_resource type="Script" uid="uid://7u2bjvepcj53" path="res://scripts/mainMenu/MainMenu.gd" id="1_y6vun"]
+[ext_resource type="Texture2D" uid="uid://diu7jw7w5ua7e" path="res://assets/pictures/MainMenuBackGround.png" id="2_e1dod"]
+[ext_resource type="FontFile" uid="uid://bmhsu2eo1xide" path="res://assets/fonts/Cubic_11_1.013_R.ttf" id="3_bvc5d"]
+[ext_resource type="Script" uid="uid://dpk3ohrbiu82s" path="res://scripts/sfx/ButtonWithSound.gd" id="4_ekkse"]
+[ext_resource type="AudioStream" uid="uid://dtk8skef5rinh" path="res://assets/audios/MainMenuAudio.ogg" id="5_84lro"]
+[ext_resource type="Script" uid="uid://dkvc8rw8vfd2m" path="res://scripts/mainMenu/settings/AudioControl.gd" id="6_u1wty"]
+[ext_resource type="Script" uid="uid://d1d58t264ftst" path="res://scripts/mainMenu/settings/FullScreenControl.gd" id="7_u2yxo"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_h7a2f"]
+texture = ExtResource("2_e1dod")
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_4fyr5"]
+blend_mode = 1
+
+[sub_resource type="Curve" id="Curve_i0awj"]
+_limits = [0.0, 0.3, 0.0, 1.0]
+_data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(0.5048544, 0.29520884), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="CurveTexture" id="CurveTexture_4fyr5"]
+curve = SubResource("Curve_i0awj")
+
+[sub_resource type="Gradient" id="Gradient_4fyr5"]
+offsets = PackedFloat32Array(0, 0.005319149)
+colors = PackedColorArray(1, 1, 1, 0.078431375, 1, 1, 1, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_4ms1j"]
+gradient = SubResource("Gradient_4fyr5")
+
+[sub_resource type="Curve" id="Curve_4fyr5"]
+_limits = [0.0, 3.0, 0.0, 1.0]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="Curve" id="Curve_4ms1j"]
+_limits = [0.0, 30.0, 0.0, 30.0]
+_data = [Vector2(0, 15.6265335), 0.0, 0.0, 0, 0, Vector2(12.718447, 30), 0.0, 0.0, 0, 0, Vector2(30, 30), 0.0, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="Curve" id="Curve_0n5pj"]
+_limits = [0.0, 3.0, 0.0, 1.0]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveXYZTexture" id="CurveXYZTexture_0n5pj"]
+curve_x = SubResource("Curve_4fyr5")
+curve_y = SubResource("Curve_4ms1j")
+curve_z = SubResource("Curve_0n5pj")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_3m84m"]
+particle_flag_disable_z = true
+emission_shape_offset = Vector3(0, -350, 0)
+emission_shape = 3
+emission_box_extents = Vector3(600, 1, 1)
+gravity = Vector3(0, 3000, 0)
+scale_min = 0.19999999
+scale_over_velocity_curve = SubResource("CurveXYZTexture_0n5pj")
+color_initial_ramp = SubResource("GradientTexture1D_4ms1j")
+alpha_curve = SubResource("CurveTexture_4fyr5")
+
+[sub_resource type="StyleBoxLine" id="StyleBoxLine_4fyr5"]
+color = Color(1, 1, 1, 1)
+thickness = 6
+
+[sub_resource type="StyleBoxLine" id="StyleBoxLine_4ms1j"]
+color = Color(0.58380055, 0.7202619, 1, 1)
+thickness = 6
+
+[sub_resource type="StyleBoxLine" id="StyleBoxLine_0n5pj"]
+color = Color(0.58431375, 0.72156864, 1, 1)
+thickness = 6
+
+[node name="MainMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_y6vun")
+
+[node name="Background" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_h7a2f")
+
+[node name="Rain" type="GPUParticles2D" parent="."]
+material = SubResource("CanvasItemMaterial_4fyr5")
+position = Vector2(585, 323)
+amount = 1000
+lifetime = 0.5
+preprocess = 0.5
+visibility_rect = Rect2(-350, -200, 700, 400)
+process_material = SubResource("ParticleProcessMaterial_3m84m")
+
+[node name="GameTitle" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -151.0
+offset_top = -253.0
+offset_right = 159.0
+offset_bottom = -183.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_fonts/font = ExtResource("3_bvc5d")
+theme_override_font_sizes/font_size = 60
+text = "Unemployed"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="MainButtonContainer" type="VBoxContainer" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -73.0
+offset_top = -232.0
+offset_right = 85.0
+offset_bottom = -52.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_constants/separation = 6
+
+[node name="Start" type="Button" parent="MainButtonContainer" groups=["buttons"]]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_fonts/font = ExtResource("3_bvc5d")
+theme_override_font_sizes/font_size = 40
+text = "Start
+"
+script = ExtResource("4_ekkse")
+
+[node name="Setting" type="Button" parent="MainButtonContainer" groups=["buttons"]]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_fonts/font = ExtResource("3_bvc5d")
+theme_override_font_sizes/font_size = 40
+text = "Settings"
+script = ExtResource("4_ekkse")
+
+[node name="Quit" type="Button" parent="MainButtonContainer" groups=["buttons"]]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_fonts/font = ExtResource("3_bvc5d")
+theme_override_font_sizes/font_size = 40
+text = "Quit"
+script = ExtResource("4_ekkse")
+
+[node name="MainMenuAudio" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("5_84lro")
+autoplay = true
+bus = &"Music"
+
+[node name="SettingPanel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -266.0
+offset_top = -471.0
+offset_right = 276.0
+offset_bottom = -19.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="SettingLabel" type="Label" parent="SettingPanel"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 23.0
+grow_horizontal = 2
+theme_override_fonts/font = ExtResource("3_bvc5d")
+theme_override_font_sizes/font_size = 30
+text = "Settings"
+horizontal_alignment = 1
+
+[node name="SettingContainer" type="VBoxContainer" parent="SettingPanel"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -268.5
+offset_top = -80.0
+offset_right = 268.5
+offset_bottom = 80.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MasterAudioControl" type="HBoxContainer" parent="SettingPanel/SettingContainer"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="MasterAudioLabel" type="Label" parent="SettingPanel/SettingContainer/MasterAudioControl"]
+layout_mode = 2
+size_flags_horizontal = 2
+theme_override_fonts/font = ExtResource("3_bvc5d")
+theme_override_font_sizes/font_size = 30
+text = "Master"
+
+[node name="MasterAudioControl" type="HSlider" parent="SettingPanel/SettingContainer/MasterAudioControl"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+theme_override_styles/slider = SubResource("StyleBoxLine_4fyr5")
+theme_override_styles/grabber_area = SubResource("StyleBoxLine_4ms1j")
+theme_override_styles/grabber_area_highlight = SubResource("StyleBoxLine_0n5pj")
+max_value = 1.0
+step = 0.05
+value = 1.0
+script = ExtResource("6_u1wty")
+audio_bus_name = "Master"
+
+[node name="MusicSetting" type="HBoxContainer" parent="SettingPanel/SettingContainer"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="MusicLabel" type="Label" parent="SettingPanel/SettingContainer/MusicSetting"]
+layout_mode = 2
+size_flags_horizontal = 2
+theme_override_fonts/font = ExtResource("3_bvc5d")
+theme_override_font_sizes/font_size = 30
+text = "Music"
+
+[node name="MusicControl" type="HSlider" parent="SettingPanel/SettingContainer/MusicSetting"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+theme_override_styles/slider = SubResource("StyleBoxLine_4fyr5")
+theme_override_styles/grabber_area = SubResource("StyleBoxLine_4ms1j")
+theme_override_styles/grabber_area_highlight = SubResource("StyleBoxLine_0n5pj")
+max_value = 1.0
+step = 0.05
+value = 1.0
+script = ExtResource("6_u1wty")
+audio_bus_name = "Music"
+
+[node name="SFXSetting" type="HBoxContainer" parent="SettingPanel/SettingContainer"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="SFXLabel" type="Label" parent="SettingPanel/SettingContainer/SFXSetting"]
+layout_mode = 2
+size_flags_horizontal = 2
+theme_override_fonts/font = ExtResource("3_bvc5d")
+theme_override_font_sizes/font_size = 30
+text = "SFX"
+
+[node name="SFXControl" type="HSlider" parent="SettingPanel/SettingContainer/SFXSetting"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+theme_override_styles/slider = SubResource("StyleBoxLine_4fyr5")
+theme_override_styles/grabber_area = SubResource("StyleBoxLine_4ms1j")
+theme_override_styles/grabber_area_highlight = SubResource("StyleBoxLine_0n5pj")
+max_value = 1.0
+step = 0.05
+value = 1.0
+script = ExtResource("6_u1wty")
+audio_bus_name = "SFX"
+
+[node name="FullScreenSetting" type="HBoxContainer" parent="SettingPanel/SettingContainer"]
+layout_mode = 2
+theme_override_constants/separation = 35
+
+[node name="FullScreenLabel" type="Label" parent="SettingPanel/SettingContainer/FullScreenSetting"]
+layout_mode = 2
+size_flags_horizontal = 2
+theme_override_fonts/font = ExtResource("3_bvc5d")
+theme_override_font_sizes/font_size = 30
+text = "FullScreen"
+
+[node name="FullScreenControl" type="CheckButton" parent="SettingPanel/SettingContainer/FullScreenSetting"]
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_font_sizes/font_size = 30
+alignment = 1
+script = ExtResource("7_u2yxo")
+
+[node name="Back" type="Button" parent="SettingPanel" groups=["buttons"]]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -56.0
+grow_horizontal = 2
+grow_vertical = 0
+size_flags_vertical = 3
+theme_override_fonts/font = ExtResource("3_bvc5d")
+theme_override_font_sizes/font_size = 40
+text = "Back"
+script = ExtResource("4_ekkse")
+
+[connection signal="value_changed" from="SettingPanel/SettingContainer/MasterAudioControl/MasterAudioControl" to="SettingPanel/SettingContainer/MasterAudioControl/MasterAudioControl" method="_on_value_changed"]
+[connection signal="value_changed" from="SettingPanel/SettingContainer/MusicSetting/MusicControl" to="SettingPanel/SettingContainer/MusicSetting/MusicControl" method="_on_value_changed"]
+[connection signal="value_changed" from="SettingPanel/SettingContainer/SFXSetting/SFXControl" to="SettingPanel/SettingContainer/SFXSetting/SFXControl" method="_on_value_changed"]
+[connection signal="toggled" from="SettingPanel/SettingContainer/FullScreenSetting/FullScreenControl" to="SettingPanel/SettingContainer/FullScreenSetting/FullScreenControl" method="_on_toggled"]
