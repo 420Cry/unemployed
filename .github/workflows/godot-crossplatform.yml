@@ -18,12 +18,88 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 2. Setup Godot with export templates
-      - name: Setup Godot
-        uses: firebelley/godot-action@v2
-        with:
-          version: "4.5-stable"
-          export_templates: true
+      # 2. Setup Godot by downloading editor and export templates directly
+      - name: Setup Godot (download editor + export templates)
+        run: |
+          set -eux
+          VERSION="4.5-stable"
+          WORKDIR="$RUNNER_TEMP/godot"
+          mkdir -p "$WORKDIR"
+
+          download() {
+            url="$1"
+            out="$2"
+            echo "Trying: $url"
+            curl -fsSL "$url" -o "$out" || return 1
+            return 0
+          }
+
+          # Choose editor asset candidates for Linux and macOS (tries multiple common names)
+          if [ "${{ matrix.platform }}" = "Mac" ]; then
+            candidates=(
+              "Godot_v${VERSION}_macos_universal.zip"
+              "Godot_v${VERSION}_macos.zip"
+              "Godot_v${VERSION}_macos.universal.zip"
+            )
+          else
+            candidates=(
+              "Godot_v${VERSION}_linux.x86_64.zip"
+              "Godot_v${VERSION}_linux.x86_64.tar.xz"
+            )
+          fi
+
+          EDITOR_ARCHIVE=""
+          for name in "${candidates[@]}"; do
+            url="https://github.com/godotengine/godot/releases/download/${VERSION}/${name}"
+            out="$WORKDIR/$name"
+            if download "$url" "$out"; then
+              EDITOR_ARCHIVE="$out"
+              break
+            fi
+          done
+
+          if [ -z "$EDITOR_ARCHIVE" ]; then
+            echo "Failed to download Godot editor for platform: ${{ matrix.platform }}"
+            exit 1
+          fi
+
+          # Extract editor
+          case "$EDITOR_ARCHIVE" in
+            *.zip) unzip -q "$EDITOR_ARCHIVE" -d "$WORKDIR" ;;
+            *.tar.xz) tar -xJf "$EDITOR_ARCHIVE" -C "$WORKDIR" ;;
+            *) echo "Unknown archive type: $EDITOR_ARCHIVE"; exit 1 ;;
+          esac
+
+          # Locate Godot binary
+          GODOT_BIN=$(find "$WORKDIR" -type f -name Godot -print -quit || true)
+          if [ -z "$GODOT_BIN" ]; then
+            # On macOS the binary is inside Godot.app
+            GODOT_BIN=$(find "$WORKDIR" -type f -path "*/Godot.app/Contents/MacOS/Godot" -print -quit || true)
+          fi
+          if [ -z "$GODOT_BIN" ]; then
+            echo "Could not find Godot binary after extraction.";
+            ls -la "$WORKDIR" || true
+            exit 1
+          fi
+          chmod +x "$GODOT_BIN"
+          echo "GODOT_BIN=$GODOT_BIN" >> $GITHUB_ENV
+
+          # Download export templates (.tpz) and extract to expected templates dir
+          TPL_NAME="Godot_v${VERSION}_export_templates.tpz"
+          TPL_URL="https://github.com/godotengine/godot/releases/download/${VERSION}/${TPL_NAME}"
+          TPL_OUT="$WORKDIR/$TPL_NAME"
+          if ! download "$TPL_URL" "$TPL_OUT"; then
+            echo "Failed to download export templates: $TPL_URL"; exit 1
+          fi
+          TEMPLATES_DIR="$HOME/.local/share/godot/templates"
+          mkdir -p "$TEMPLATES_DIR"
+          # .tpz is a zip archive
+          unzip -q "$TPL_OUT" -d "$TEMPLATES_DIR"
+
+      - name: Verify Godot
+        run: |
+          echo "Using Godot binary: $GODOT_BIN"
+          "$GODOT_BIN" --version || true
 
       # 3. Create builds folder
       - name: Create builds folder
@@ -32,15 +108,23 @@ jobs:
       # 4. Export builds based on platform
       - name: Export Godot Build
         run: |
-          if [ "${{ matrix.platform }}" == "Windows" ]; then
-            ./Godot_v4.5-stable_linux.x86_64/Godot --headless --export "Windows" builds/game.exe
-          elif [ "${{ matrix.platform }}" == "Linux" ]; then
-            ./Godot_v4.5-stable_linux.x86_64/Godot --headless --export "Linux/X11" builds/game.x86_64
-          elif [ "${{ matrix.platform }}" == "Mac" ]; then
-            ./Godot_v4.5-stable_macos/Godot.app/Contents/MacOS/Godot --headless --export "Mac OSX" builds/game.app
-          elif [ "${{ matrix.platform }}" == "HTML5" ]; then
-            ./Godot_v4.5-stable_linux.x86_64/Godot --headless --export "HTML5" builds/game.html
-          fi
+          set -eux
+          mkdir -p builds
+          case "${{ matrix.platform }}" in
+            Windows)
+              "$GODOT_BIN" --headless --export "Windows" builds/game.exe
+              ;;
+            Linux)
+              "$GODOT_BIN" --headless --export "Linux/X11" builds/game.x86_64
+              ;;
+            Mac)
+              "$GODOT_BIN" --headless --export "Mac OSX" builds/game.app
+              ;;
+            HTML5)
+              "$GODOT_BIN" --headless --export "HTML5" builds/game.html
+              ;;
+            *) echo "Unknown platform: ${ matrix.platform }"; exit 1 ;;
+          esac
 
       # 5. Upload build artifacts
       - name: Upload Artifacts
