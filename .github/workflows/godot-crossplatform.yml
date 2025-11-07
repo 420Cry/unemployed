@@ -1,4 +1,4 @@
-name: Godot Build (No Export)
+name: Godot Build Cross-Platform
 
 on:
   push:
