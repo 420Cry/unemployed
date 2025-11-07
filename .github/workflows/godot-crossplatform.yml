@@ -116,16 +116,16 @@ jobs:
           set -eux
           case "${{ matrix.platform }}" in
             Windows)
-              "$GODOT_BIN" --headless --export "Windows" builds/game.exe
+              "$GODOT_BIN" --headless --export-release "Windows" builds/game.exe
               ;;
             Linux)
-              "$GODOT_BIN" --headless --export "Linux/X11" builds/game.x86_64
+              "$GODOT_BIN" --headless --export-release "Linux/X11" builds/game.x86_64
               ;;
             Mac)
-              "$GODOT_BIN" --headless --export "Mac OSX" builds/game.app
+              "$GODOT_BIN" --headless --export-release "Mac OSX" builds/game.app
               ;;
             HTML5)
-              "$GODOT_BIN" --headless --export "HTML5" builds/game.html
+              "$GODOT_BIN" --headless --export-release "HTML5" builds/game.html
               ;;
             *)
               echo "Unknown platform: ${ matrix.platform }"
