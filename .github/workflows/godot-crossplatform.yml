@@ -10,7 +10,7 @@ jobs:
   build:
     strategy:
       matrix:
-        platform: [Windows, Linux, Mac, HTML5]
+        platform: [Windows, Mac]
     runs-on: ${{ matrix.platform == 'Mac' && 'macos-latest' || 'ubuntu-latest' }}
 
     steps:
@@ -114,24 +114,18 @@ jobs:
       - name: Export Godot Build
         run: |
           set -eux
-            case "${{ matrix.platform }}" in
+          case "${{ matrix.platform }}" in
             Windows)
-                "$GODOT_BIN" --headless --export-release "Windows Desktop" builds/game.exe
-                ;;
-            Linux)
-                "$GODOT_BIN" --headless --export-release "Linux/X11" builds/game.x86_64
-                ;;
+              "$GODOT_BIN" --headless --export-release "Windows Desktop" builds/game.exe
+              ;;
             Mac)
-                "$GODOT_BIN" --headless --export-release "macOS" builds/game.app
-                ;;
-            HTML5)
-                "$GODOT_BIN" --headless --export-release "HTML5" builds/game.html
-                ;;
+              "$GODOT_BIN" --headless --export-release "macOS" builds/game.app
+              ;;
             *)
-                echo "Unknown platform: ${ matrix.platform }"
-                exit 1
-                ;;
-            esac
+              echo "Unknown platform: ${ matrix.platform }"
+              exit 1
+              ;;
+          esac
 
       # 6. Upload artifacts
       - name: Upload Artifacts
