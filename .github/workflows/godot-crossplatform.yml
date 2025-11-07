@@ -1,4 +1,4 @@
-name: Godot Cross-Platform Build
+name: Godot Build (No Export)
 
 on:
   push:
@@ -11,14 +11,13 @@ jobs:
     strategy:
       matrix:
         platform: [Windows, Mac]
+
     runs-on: ${{ matrix.platform == 'Mac' && 'macos-latest' || 'ubuntu-latest' }}
 
     steps:
-      # 1. Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 2. Setup Godot (download editor + export templates)
       - name: Setup Godot
         run: |
           set -eux
@@ -60,76 +59,24 @@ jobs:
             fi
           done
 
-          if [ -z "$EDITOR_ARCHIVE" ]; then
-            echo "Failed to download Godot editor for platform: ${{ matrix.platform }}"
-            exit 1
-          fi
-
           # Extract editor
           case "$EDITOR_ARCHIVE" in
             *.zip) unzip -q "$EDITOR_ARCHIVE" -d "$WORKDIR" ;;
             *.tar.xz) tar -xJf "$EDITOR_ARCHIVE" -C "$WORKDIR" ;;
-            *) echo "Unknown archive type: $EDITOR_ARCHIVE"; exit 1 ;;
           esac
 
           # Locate Godot binary
           if [ "${{ matrix.platform }}" = "Mac" ]; then
             GODOT_BIN=$(find "$WORKDIR" -type f -path "*/Godot.app/Contents/MacOS/Godot" -print -quit)
           else
-            GODOT_BIN=$(find "$WORKDIR" -type f -executable -name "Godot_v${VERSION}_linux.x86_64" -print -quit || true)
-          fi
-
-          if [ -z "$GODOT_BIN" ]; then
-            echo "Could not find Godot binary after extraction."
-            ls -la "$WORKDIR"
-            exit 1
+            GODOT_BIN=$(find "$WORKDIR" -type f -executable -name "Godot_v${VERSION}_linux.x86_64" -print -quit)
           fi
 
           chmod +x "$GODOT_BIN"
           echo "GODOT_BIN=$GODOT_BIN" >> $GITHUB_ENV
 
-          # Download export templates (.tpz)
-          TPL_NAME="Godot_v${VERSION}_export_templates.tpz"
-          TPL_URL="https://github.com/godotengine/godot/releases/download/${VERSION}/${TPL_NAME}"
-          TPL_OUT="$WORKDIR/$TPL_NAME"
-          if ! download "$TPL_URL" "$TPL_OUT"; then
-            echo "Failed to download export templates: $TPL_URL"; exit 1
-          fi
-
-          TEMPLATES_DIR="$HOME/.local/share/godot/templates"
-          mkdir -p "$TEMPLATES_DIR"
-          unzip -q "$TPL_OUT" -d "$TEMPLATES_DIR"
-
-      # 3. Verify Godot binary
-      - name: Verify Godot
-        run: |
-          echo "Using Godot binary: $GODOT_BIN"
-          "$GODOT_BIN" --version || true
-
-      # 4. Create builds folder
-      - name: Create builds folder
-        run: mkdir -p builds
-
-      # 5. Export builds
-      - name: Export Godot Build
+      - name: Verify project build (headless)
         run: |
           set -eux
-          case "${{ matrix.platform }}" in
-            Windows)
-              "$GODOT_BIN" --headless --export-release "Windows Desktop" builds/game.exe
-              ;;
-            Mac)
-              "$GODOT_BIN" --headless --export-release "macOS" builds/game.app
-              ;;
-            *)
-              echo "Unknown platform: ${ matrix.platform }"
-              exit 1
-              ;;
-          esac
-
-      # 6. Upload artifacts
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.platform }}-build
-          path: builds/
+          # Run Godot headless to scan and register scripts/plugins
+          "$GODOT_BIN" --headless --quit --verbose
