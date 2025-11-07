@@ -37,16 +37,16 @@ jobs:
             return 1
           }
 
+          # Select correct Godot editor per platform
           if [ "${{ matrix.platform }}" = "Mac" ]; then
             candidates=(
-              "Godot_v${VERSION}_macos_universal.zip"
               "Godot_v${VERSION}_macos.zip"
               "Godot_v${VERSION}_macos.universal.zip"
             )
-          else
+          elif [ "${{ matrix.platform }}" = "Windows" ]; then
             candidates=(
-              "Godot_v${VERSION}_linux.x86_64.zip"
-              "Godot_v${VERSION}_linux.x86_64.tar.xz"
+              "Godot_v${VERSION}_windows.win64.exe.zip"
+              "Godot_v${VERSION}_windows.exe.zip"
             )
           fi
 
@@ -76,11 +76,8 @@ jobs:
           if [ "${{ matrix.platform }}" = "Mac" ]; then
             GODOT_BIN=$(find "$WORKDIR" -type f -path "*/Godot.app/Contents/MacOS/Godot" -print -quit)
           else
-            GODOT_BIN=$(find "$WORKDIR" -type f -executable -name "Godot_v${VERSION}_linux.x86_64" -print -quit || true)
-            # fallback: pick any executable named Godot if exact name doesn't match
-            if [ -z "$GODOT_BIN" ]; then
-              GODOT_BIN=$(find "$WORKDIR" -type f -executable -name "Godot*" -print -quit || true)
-            fi
+            # Windows: pick .exe inside extracted folder
+            GODOT_BIN=$(find "$WORKDIR" -type f -name "Godot*.exe" -print -quit)
           fi
 
           if [ -z "$GODOT_BIN" ]; then
