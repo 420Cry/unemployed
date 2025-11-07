@@ -8,36 +8,41 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
     strategy:
       matrix:
-        platform: [Windows, Linux, HTML5]
+        platform: [Windows, Linux, Mac, HTML5]
+    runs-on: ${{ matrix.platform == 'Mac' && 'macos-latest' || 'ubuntu-latest' }}
 
     steps:
-      - name: Checkout Repository
+      # 1. Checkout repository
+      - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Download Godot Headless
-        run: |
-          GODOT_VERSION="4.5"
-          wget https://downloads.tuxfamily.org/godotengine/${GODOT_VERSION}/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
-          unzip Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
-          chmod +x Godot_v${GODOT_VERSION}-stable_linux.x86_64/Godot
-          mv Godot_v${GODOT_VERSION}-stable_linux.x86_64/Godot ./godot
+      # 2. Setup Godot with export templates
+      - name: Setup Godot
+        uses: firebelley/godot-action@v2
+        with:
+          version: "4.5-stable"
+          export_templates: true
 
+      # 3. Create builds folder
       - name: Create builds folder
         run: mkdir -p builds
 
-      - name: Export Build
+      # 4. Export builds based on platform
+      - name: Export Godot Build
         run: |
           if [ "${{ matrix.platform }}" == "Windows" ]; then
-            ./godot --headless --export "Windows" builds/game.exe
+            ./Godot_v4.5-stable_linux.x86_64/Godot --headless --export "Windows" builds/game.exe
           elif [ "${{ matrix.platform }}" == "Linux" ]; then
-            ./godot --headless --export "Linux/X11" builds/game.x86_64
+            ./Godot_v4.5-stable_linux.x86_64/Godot --headless --export "Linux/X11" builds/game.x86_64
+          elif [ "${{ matrix.platform }}" == "Mac" ]; then
+            ./Godot_v4.5-stable_macos/Godot.app/Contents/MacOS/Godot --headless --export "Mac OSX" builds/game.app
           elif [ "${{ matrix.platform }}" == "HTML5" ]; then
-            ./godot --headless --export "HTML5" builds/game.html
+            ./Godot_v4.5-stable_linux.x86_64/Godot --headless --export "HTML5" builds/game.html
           fi
 
+      # 5. Upload build artifacts
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
